@@ -1,19 +1,19 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 )
 
 var (
 	// Variables for cmdline flags
-	debug         bool
-	listenAddress string
-	inputFile     string
+	debug     bool
+	port      int
+	inputFile string
 
 	log = zerolog.New(os.Stderr).Level(zerolog.InfoLevel)
 )
@@ -34,11 +34,11 @@ func init() {
 		false,
 		"Enable debug logging",
 	)
-	rootCmd.PersistentFlags().StringVarP(
-		&listenAddress,
-		"listen-address", "l",
-		":8989",
-		"Address where http server will be listening",
+	rootCmd.PersistentFlags().IntVarP(
+		&port,
+		"port", "p",
+		8989,
+		"Port where http server will be listening",
 	)
 }
 
@@ -72,10 +72,11 @@ func runCommand(*cobra.Command, []string) {
 	recorder.record()
 
 	// Create server with prometheus handler
-	server := newServer(listenAddress, newPromHandler(registry))
+	address := fmt.Sprintf("0.0.0.0:%d", port)
+	server := newServer(address, newPromHandler(registry))
 
 	// Run server
-	log.Info().Str("address", listenAddress).Msg("Server started")
+	log.Info().Str("address", address).Msg("Server started")
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Error().Err(err).Msg("Server stopped")
