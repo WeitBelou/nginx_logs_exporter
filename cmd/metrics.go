@@ -8,7 +8,7 @@ import (
 const nginxMetricsNamespace = "nginx"
 
 // List of labels for metrics
-var nginxMetricsLabelNames = []string{"uri", "status"}
+var nginxMetricsLabelNames = []string{"host", "uri", "status", "method"}
 
 // nginxMetrics specifies set of metrics collectors for nginx metrics
 type nginxMetrics struct {
@@ -63,5 +63,5 @@ func (m nginxMetrics) update(e nginxLogEvent) {
 	// Save request duration
 	m.httpRequestDurationSeconds.
 		With(labels).
-		Observe(e.RequestTime.Seconds())
+		Observe(e.RequestTime)
 }
